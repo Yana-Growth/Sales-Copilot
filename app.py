@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from openai import OpenAI
+import google.generativeai as genai
 import json
 
 # --- Настройка страницы ---
@@ -54,7 +54,18 @@ st.markdown("""
 # --- Боковая панель: Настройки ---
 with st.sidebar:
     st.markdown("## ⚙️ Настройки AI")
-    api_key = st.text_input("OpenAI API Key (sk-...)", type="password", help="Введите ваш ключ для генерации ответов.")
+    api_key = st.text_input("Gemini API Key", type="password", help="Получить ключ: https://aistudio.google.com/app/apikey")
+    
+    selected_model_name = st.selectbox(
+        "Версия модели Gemini", 
+        [
+            "Default (Gemini 3 Flash Preview)",
+            "Gemini 3.1 Pro Preview",
+            "Gemini 3.1 Flash Lite Preview",
+            "Gemini 3 Flash Preview"
+        ],
+        index=0
+    )
     
     st.markdown("---")
     st.markdown("## 📚 База Знаний (Обучение ИИ)")
@@ -92,13 +103,24 @@ with col2:
     
     if generate_btn:
         if not api_key:
-            st.error("Пожалуйста, введите OpenAI API Key в настройках слева.")
+            st.error("Пожалуйста, введите Gemini API Key в настройках слева.")
         elif not lead_message:
             st.warning("Вставьте сообщение от лида для генерации ответа.")
         else:
             with st.spinner("Анализирую базу знаний и пишу ответ..."):
                 try:
-                    client = OpenAI(api_key=api_key)
+                    genai.configure(api_key=api_key)
+                    
+                    # Маршрутизация названий из UI в реальные ID моделей API Gemini
+                    model_id_map = {
+                        "Default (Gemini 3 Flash Preview)": "gemini-3.0-flash", # Предполагаемый id для API
+                        "Gemini 3.1 Pro Preview": "gemini-3.1-pro",
+                        "Gemini 3.1 Flash Lite Preview": "gemini-3.1-flash-lite",
+                        "Gemini 3 Flash Preview": "gemini-3.0-flash" 
+                    }
+                    
+                    actual_model_id = model_id_map.get(selected_model_name, "gemini-3.0-flash")
+                    model = genai.GenerativeModel(actual_model_id)
                     
                     system_prompt = f"""You are a Senior Enterprise Sales Executive at Tumodo (B2B business travel platform).
 Your goal is to qualify the Lead and get them on a demo call.
@@ -110,25 +132,26 @@ Here is the Tumodo Knowledge Base (Use arguments from here against B2C tools or 
 {kb_text[:15000] if kb_text else "Tumodo saves up to 35% on travel spend and automates reporting. Manual tools are a bottleneck for Finance."}
 ---
 
-Format output strictly as a JSON object: {{"responses": [{{"style": "...", "text": "..."}}]}}
+Format output strictly as a JSON object with this exact structure, do NOT include markdown blocks: {{"responses": [{{"style": "Consultative", "text": "..."}, {{"style": "Direct", "text": "..."}}]}}
 Generate exactly TWO options: one softer (Consultative), one more direct (ROI-focused).
 """
 
                     user_prompt = f"""Lead Info: Role: {role}, Size: {company_size}, Region: {region}.
 Lead's Message: "{lead_message}".
 """
+                    
+                    # В Gemini system prompt передается либо в настройках модели, либо просто в начале текста
+                    full_prompt = system_prompt + "\n\n" + user_prompt
 
-                    response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt}
-                        ],
-                        response_format={ "type": "json_object" },
-                        temperature=0.7
+                    response = model.generate_content(
+                        full_prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=0.7,
+                            response_mime_type="application/json",
+                        )
                     )
                     
-                    result = json.loads(response.choices[0].message.content)
+                    result = json.loads(response.text)
                     
                     for r in result.get('responses', []):
                         st.markdown(f"""
