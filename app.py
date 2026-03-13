@@ -59,10 +59,10 @@ with st.sidebar:
     selected_model_name = st.selectbox(
         "Версия модели Gemini", 
         [
-            "Default (Gemini 3 Flash Preview)",
-            "Gemini 3.1 Pro Preview",
-            "Gemini 3.1 Flash Lite Preview",
-            "Gemini 3 Flash Preview"
+            "gemini-3.1-pro",
+            "gemini-3.0-flash",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash"
         ],
         index=0
     )
@@ -112,16 +112,9 @@ with col2:
                     genai.configure(api_key=api_key)
                     
                     model_id = selected_model_name
-                    # Если нужно обрезать "Default (" и ")" для API, по идее Google AI Studio передает их как есть:
-                    if model_id == "Default (Gemini 3 Flash Preview)":
-                        model_id = "gemini-3.0-flash" 
-                    elif model_id == "Gemini 3.1 Pro Preview":
-                        model_id = "gemini-3.1-pro-preview"
-                    elif model_id == "Gemini 3.1 Flash Lite Preview":
-                        model_id = "gemini-3.1-flash-lite-preview"
-                    elif model_id == "Gemini 3 Flash Preview":
-                        model_id = "gemini-3.0-flash-preview"
-                        
+                    # Для Gemini API названия 3.0 и 3.1 пишутся с дефисом, заменяем точку на дефис
+                    model_id = model_id.replace(".", "-")
+                    
                     model = genai.GenerativeModel(model_id)
                     
                     system_prompt = f"""You are a Senior Enterprise Sales Executive at Tumodo (B2B business travel platform).
