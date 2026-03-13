@@ -111,16 +111,18 @@ with col2:
                 try:
                     genai.configure(api_key=api_key)
                     
-                    # Маршрутизация названий из UI в реальные ID моделей API Gemini
-                    model_id_map = {
-                        "Default (Gemini 3 Flash Preview)": "gemini-3.0-flash", # Предполагаемый id для API
-                        "Gemini 3.1 Pro Preview": "gemini-3.1-pro",
-                        "Gemini 3.1 Flash Lite Preview": "gemini-3.1-flash-lite",
-                        "Gemini 3 Flash Preview": "gemini-3.0-flash" 
-                    }
-                    
-                    actual_model_id = model_id_map.get(selected_model_name, "gemini-3.0-flash")
-                    model = genai.GenerativeModel(actual_model_id)
+                    model_id = selected_model_name
+                    # Если нужно обрезать "Default (" и ")" для API, по идее Google AI Studio передает их как есть:
+                    if model_id == "Default (Gemini 3 Flash Preview)":
+                        model_id = "gemini-3.0-flash" 
+                    elif model_id == "Gemini 3.1 Pro Preview":
+                        model_id = "gemini-3.1-pro-preview"
+                    elif model_id == "Gemini 3.1 Flash Lite Preview":
+                        model_id = "gemini-3.1-flash-lite-preview"
+                    elif model_id == "Gemini 3 Flash Preview":
+                        model_id = "gemini-3.0-flash-preview"
+                        
+                    model = genai.GenerativeModel(model_id)
                     
                     system_prompt = f"""You are a Senior Enterprise Sales Executive at Tumodo (B2B business travel platform).
 Your goal is to qualify the Lead and get them on a demo call.
