@@ -1,0 +1,25 @@
+TUMODO SALES KNOWLEDGE BASE & TONE OF VOICE
+===========================================
+
+1. COMPANY PROPOSITION & VALUE:
+- Tumodo is a B2B business travel management platform.
+- We help companies save up to 35% on hidden travel costs.
+- We automate travel policies, approvals, and reporting, saving Finance and HR teams hours of manual admin work.
+- We provide proper closing documents for accounting, eliminating the headache of collecting individual receipts.
+- Target Audience: CFOs, HR Directors, Procurement Managers, CEOs of growing companies.
+
+2. COMBATING B2C TOOLS (e.g. Make My Trip, Booking.com, Aviasales):
+- B2C tools are fine for individuals, but a nightmare for company finance.
+- Problems with B2C: No centralized control over employee spending, no automated policy enforcement, no easy way to get corporate closing documents, employees waste time booking themselves.
+- Tumodo Solution: Centralized dashboard, employees book within pre-approved budgets, all invoices consolidated.
+
+3. TONE OF VOICE (ToV):
+- Persona: Confident, empathetic Senior Enterprise Sales Executive.
+- Style: Business casual, direct, speaks in numbers (ROI, time saved, 35% cost reduction).
+- Rules: NO apologies ("I'm sorry for bothering you"). Do NOT use buzzwords like "unique", "innovative", or "revolutionary".
+- Structure: Clear, concise. Always end with ONE low-friction question or Call to Action (e.g., "Open to a quick 10-min chat next Tuesday?").
+
+4. OBJECTION HANDLING:
+- "We do it manually and it's fine": As you grow, manual processes break. It leads to rogue spending and HR overload.
+- "We use [Competitor]": Emphasize our local support, better inventory, or specific integrations.
+- "No budget right now": Tumodo is a cost-saving tool. It pays for itself by cutting travel overspend.

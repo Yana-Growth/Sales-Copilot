@@ -1,8 +1,5 @@
 import streamlit as st
 import os
-import PyPDF2
-import docx
-import pandas as pd
 from openai import OpenAI
 import json
 
@@ -54,52 +51,24 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Боковая панель: Настройки и Загрузка Базы Знаний ---
+# --- Боковая панель: Настройки ---
 with st.sidebar:
     st.markdown("## ⚙️ Настройки AI")
     api_key = st.text_input("OpenAI API Key (sk-...)", type="password", help="Введите ваш ключ для генерации ответов.")
     
     st.markdown("---")
     st.markdown("## 📚 База Знаний (Обучение ИИ)")
-    st.markdown("Загрузите файлы Tumodo (PDF, Word, Excel), чтобы ИИ выучил ваш Tone of Voice, скрипты и данные конкурентов.")
+    st.markdown("ИИ автоматически использует правила, скрипты и Tone of Voice из файла `knowledge.txt`.")
     
-    uploaded_files = st.file_uploader(
-        "Загрузите брендбук, скрипты аутрича и т.д.", 
-        type=['pdf', 'docx', 'xlsx', 'txt'],
-        accept_multiple_files=True
-    )
-
-# --- Извлечение текста из файлов (Локальное временное обучение) ---
-@st.cache_data
-def extract_text_from_files(files):
-    knowledge_base = ""
-    if not files:
-        return knowledge_base
-        
-    for file in files:
-        try:
-            if file.name.endswith('.pdf'):
-                pdf_reader = PyPDF2.PdfReader(file)
-                for page in pdf_reader.pages:
-                    knowledge_base += page.extract_text() + "\n"
-            elif file.name.endswith('.docx'):
-                doc = docx.Document(file)
-                for para in doc.paragraphs:
-                    knowledge_base += para.text + "\n"
-            elif file.name.endswith('.xlsx'):
-                df = pd.read_excel(file)
-                knowledge_base += df.to_string() + "\n"
-            elif file.name.endswith('.txt'):
-                knowledge_base += file.getvalue().decode("utf-8") + "\n"
-        except Exception as e:
-            st.sidebar.error(f"Ошибка при чтении {file.name}: {e}")
-            
-    return knowledge_base
-
-kb_text = extract_text_from_files(uploaded_files)
-
-if uploaded_files:
-    st.sidebar.success(f"✅ База знаний загружена! ({len(uploaded_files)} файлов)")
+    try:
+        with open("knowledge.txt", "r", encoding="utf-8") as f:
+            kb_text = f.read()
+        st.success("✅ Локальная база знаний успешно подключена!")
+        with st.expander("Посмотреть текущую базу знаний"):
+            st.text(kb_text)
+    except FileNotFoundError:
+        kb_text = "Tumodo saves up to 35% on travel spend and automates reporting. Manual tools are a bottleneck for Finance."
+        st.warning("⚠️ Файл knowledge.txt не найден. Используются базовые настройки.")
 
 # --- Основной интерфейс ---
 st.markdown('<p class="main-header">🚀 Tumodo Sales Copilot</p>', unsafe_allow_html=True)
