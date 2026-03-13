@@ -132,7 +132,7 @@ Here is the Tumodo Knowledge Base (Use arguments from here against B2C tools or 
 {kb_text[:15000] if kb_text else "Tumodo saves up to 35% on travel spend and automates reporting. Manual tools are a bottleneck for Finance."}
 ---
 
-Format output strictly as a JSON object with this exact structure, do NOT include markdown blocks: {{"responses": [{{"style": "Consultative", "text": "..."}, {{"style": "Direct", "text": "..."}}]}}
+Format output strictly as a JSON object with this exact structure, do NOT include markdown blocks: {{"responses": [{{"style": "Consultative", "text": "..."}}, {{"style": "Direct", "text": "..."}}]}}
 Generate exactly TWO options: one softer (Consultative), one more direct (ROI-focused).
 """
 
