@@ -107,7 +107,8 @@ col1, col2 = st.columns([1, 1.2])
 with col1:
     st.subheader("1. Вводные данные")
     
-    company_context = st.text_input("Контекст об оппоненте (Необязательно)", placeholder="Например: Внедряют SAP, 500+ сотрудников")
+    opponent_context = st.text_input("👤 О собеседнике (Необязательно)", placeholder="Например: Недавно перешел в эту компанию, любит строго по делу, CFO")
+    company_context = st.text_input("🏢 О компании (Необязательно)", placeholder="Например: Внедряют SAP, 500+ сотрудников, открыли ИТ-хаб в Дубае")
     region = st.selectbox("Регион лида", ["UAE", "Saudi Arabia (KSA)", "Индия", "Казахстан", "Германия", "Global"])
     
     lead_history = st.text_area("История переписки (включая логи GetSales):", height=350, placeholder="Вставьте скопированный текст из GetSales (включая системные сообщения об Automation Connect, теги и т.д.)")
@@ -137,8 +138,9 @@ with col2:
                     Ты — Стас Клюев (Stanislav Klyuy), Senior Enterprise Sales Executive в компании Tumodo (B2B).
                     Мы общаемся от лица Стаса Клюева. Твоя главная цель — квалифицировать лида в LinkedIn и закрыть его на звонок/демо.
                     
-                    ВВОДНЫЕ О ЛИДЕ / СДЕЛКЕ:
-                    - Контекст: {company_context}
+                    ВВОДНЫЕ О ЛИДЕ И СДЕЛКЕ:
+                    - Портрет собеседника: {opponent_context if opponent_context else "Нет дополнительных данных"}
+                    - Контекст компании: {company_context if company_context else "Нет дополнительных данных"}
                     - Регион: {region}
                     
                     ИСТОРИЯ ПЕРЕПИСКИ:
