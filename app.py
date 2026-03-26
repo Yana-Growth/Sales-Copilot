@@ -4,6 +4,7 @@ import pypdf
 import pandas as pd
 import requests
 import re
+import time
 
 st.set_page_config(page_title="Tumodo Sales Copilot", layout="wide", page_icon="💼")
 
@@ -209,7 +210,15 @@ with col2:
                         "generationConfig": {"temperature": 0.5}
                     }
                     
-                    response = requests.post(url, headers=headers, json=data, timeout=120)
+                    max_attempts = 3
+                    for attempt in range(max_attempts):
+                        response = requests.post(url, headers=headers, json=data, timeout=120)
+                        if response.status_code == 503:
+                            if attempt < max_attempts - 1:
+                                st.warning(f"⚠️ Сервер Google перегружен (Ошибка 503). Жду 3 секунды и пробую еще раз... (Попытка {attempt+1} из {max_attempts})")
+                                time.sleep(3)
+                                continue
+                        break
                     
                     if response.status_code != 200:
                         st.error(f"Ошибка API (Код {response.status_code}): {response.text}")
