@@ -173,6 +173,7 @@ with col2:
                     ====SEPARATOR====
                     Вариант 3: Отработка решения (Competitor challenge / Value Bump)
                     [Текст]
+                    """
                     
                     url = f"https://generativelanguage.googleapis.com/v1beta/models/{selected_model}:generateContent?key={api_key}"
                     headers = {'Content-Type': 'application/json'}
