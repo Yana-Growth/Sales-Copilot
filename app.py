@@ -22,13 +22,13 @@ st.markdown("""
 def load_all_files():
     kb_texts = {}
     
-    # Ищем файлы (PDF, CSV, XLSX) локально
+    # Ищем файлы (PDF, CSV, XLSX, TXT) локально
     supported_files = []
     for root, dirs, files in os.walk("."):
         if ".git" in root or "venv" in root or ".next" in root or "node_modules" in root:
             continue
         for file in files:
-            if file.lower().endswith((".pdf", ".csv", ".xlsx")):
+            if file.lower().endswith((".pdf", ".csv", ".xlsx", ".txt")):
                 supported_files.append(os.path.join(root, file))
                 
     for file_path in supported_files:
@@ -52,6 +52,9 @@ def load_all_files():
             elif filename.lower().endswith(".xlsx"):
                 df = pd.read_excel(file_path)
                 text = df.to_string(index=False)
+            elif filename.lower().endswith(".txt"):
+                with open(file_path, "r", encoding="utf-8") as f:
+                    text = f.read()
                 
             kb_texts[clean_name] = text
         except Exception as e:
