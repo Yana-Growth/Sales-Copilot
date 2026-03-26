@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import pypdf
 import pandas as pd
-import google.generativeai as genai
+import requests
 import re
 
 st.set_page_config(page_title="Tumodo Sales Copilot", layout="wide", page_icon="💼")
@@ -126,9 +126,6 @@ with col2:
         else:
             with st.spinner("Анализирую логи GetSales и пишу ответ..."):
                 try:
-                    genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel(selected_model)
-                    
                     kb_context = ""
                     for label, text in kb_texts.items():
                         if text:
@@ -176,21 +173,37 @@ with col2:
                     ====SEPARATOR====
                     Вариант 3: Отработка решения (Competitor challenge / Value Bump)
                     [Текст]
-                    """
                     
-                    response = model.generate_content(system_prompt)
-                    raw_text = response.text
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{selected_model}:generateContent?key={api_key}"
+                    headers = {'Content-Type': 'application/json'}
+                    data = {
+                        "contents": [{"parts": [{"text": system_prompt}]}],
+                        "generationConfig": {"temperature": 0.5}
+                    }
                     
-                    parts = [v.strip() for v in raw_text.split("====SEPARATOR====") if v.strip()]
+                    response = requests.post(url, headers=headers, json=data, timeout=45)
                     
-                    if len(parts) > 0:
-                        with st.expander("🧠 Логика мышления ИИ (Анализ)", expanded=True):
-                            st.markdown(parts[0])
-                        
-                        for i, variant in enumerate(parts[1:]):
-                            st.markdown(f'<div style="background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 16px; color: #1E293B;"><strong style="color:#2563EB;">Вариант {i+1}</strong><br><br>{variant}</div>', unsafe_allow_html=True)
+                    if response.status_code != 200:
+                        st.error(f"Ошибка API (Код {response.status_code}): {response.text}")
                     else:
-                        st.write(raw_text)
-                        
+                        resp_json = response.json()
+                        if 'candidates' not in resp_json or not resp_json['candidates']:
+                            st.error(f"Google заблокировал ответ (Safety filter): {resp_json}")
+                        else:
+                            raw_text = resp_json['candidates'][0]['content']['parts'][0].get('text', '')
+                            
+                            parts = [v.strip() for v in raw_text.split("====SEPARATOR====") if v.strip()]
+                            
+                            if len(parts) > 0:
+                                with st.expander("🧠 Логика мышления ИИ (Анализ)", expanded=True):
+                                    st.markdown(parts[0])
+                                
+                                for i, variant in enumerate(parts[1:]):
+                                    st.markdown(f'<div style="background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #E2E8F0; margin-bottom: 16px; color: #1E293B;"><strong style="color:#2563EB;">Вариант {i+1}</strong><br><br>{variant}</div>', unsafe_allow_html=True)
+                            else:
+                                st.write(raw_text)
+                                
+                except requests.exceptions.Timeout:
+                    st.error("⏳ Серверы Google не ответили за 45 секунд. Скорее всего сервер перегружен, попробуйте отправить запрос еще раз.")
                 except Exception as e:
-                    st.error(f"Ошибка при обращении к Gemini: {e}")
+                    st.error(f"Неизвестная ошибка: {e}")
