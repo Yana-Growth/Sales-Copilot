@@ -12,7 +12,7 @@ st.markdown("""
     .stApp { background-color: #F8FAFC; }
     [data-testid="stSidebar"] { background-color: #1E293B; }
     [data-testid="stSidebar"] * { color: white !important; }
-    .stTextInput input, .stTextArea textarea, .stSelectbox select { border-radius: 8px !important; }
+    .stTextInput input, .stTextArea textarea, .stSelectbox select { border-radius: 8px !important; color: black !important; background-color: white !important; }
     .stButton > button { background-color: #2563EB !important; color: white !important; border-radius: 8px !important; font-weight: 600 !important; border: none !important; }
     .kb-status { padding: 10px; border-radius: 8px; background-color: #0F172A; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 14px; word-break: break-all;}
 </style>
@@ -68,7 +68,7 @@ with st.sidebar:
     api_key = st.text_input("Gemini API Key", type="password", help="Ключ из Google AI Studio")
     
     selected_model = st.selectbox(
-        "Выбор модели (строго из списка AI Studio)",
+        "Выбор модели",
         [
             "gemini-3.1-pro-preview",
             "gemini-pro-latest",
@@ -84,7 +84,6 @@ with st.sidebar:
     
     st.divider()
     st.subheader("📚 База знаний")
-    st.caption("Приложение автоматически находит все PDF, Excel (xlsx) и CSV файлы в папке репозитория (включая таблицу конкурентов).")
     
     kb_texts = load_all_files()
     
