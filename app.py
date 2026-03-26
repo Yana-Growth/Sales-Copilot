@@ -10,9 +10,10 @@ st.set_page_config(page_title="Tumodo Sales Copilot", layout="wide", page_icon="
 st.markdown("""
 <style>
     .stApp { background-color: #F8FAFC; }
-    [data-testid="stSidebar"] { background-color: #1E293B; }
-    [data-testid="stSidebar"] * { color: white !important; }
-    .stTextInput input, .stTextArea textarea, .stSelectbox select { border-radius: 8px !important; color: black !important; background-color: white !important; }
+    [data-testid="stSidebar"] { background-color: #1E293B; color: white !important; }
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, [data-testid="stSidebar"] label { color: white !important; }
+    div[data-baseweb="select"] * { color: black !important; }
+    .stTextInput input, .stTextArea textarea { border-radius: 8px !important; color: black !important; background-color: white !important; }
     .stButton > button { background-color: #2563EB !important; color: white !important; border-radius: 8px !important; font-weight: 600 !important; border: none !important; }
     .kb-status { padding: 10px; border-radius: 8px; background-color: #0F172A; margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 14px; word-break: break-all;}
 </style>
