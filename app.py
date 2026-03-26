@@ -124,13 +124,40 @@ with col2:
         elif not lead_history:
             st.error("Пожалуйста, вставьте историю переписки.")
         else:
-            with st.spinner("Анализирую логи GetSales и пишу ответ..."):
+            with st.spinner("🚀 Запуск RAG-Агента: Анализ, маршрутизация файлов и написание ответа..."):
                 try:
-                    kb_context = ""
+                    # ШАГ 1: AI ROUTER
+                    catalog = """
+                    - erp_business_travel.pdf: Интеграция с ERP, избавление от ручного ввода.
+                    - cfo_travel_spending.pdf: Для CFO: возврат НДС (VAT), корпоративные карты.
+                    - proc_analysis.pdf / procurement_channels.pdf: Для закупщиков, хаос различных агентств.
+                    - tumodo_construction_case.pdf: Для строительных и индустриальных компаний.
+                    - five_steps_procurement.pdf: Общие шаги оптимизации тревела.
+                    """
+                    
+                    router_prompt = f"Контекст диалога: {lead_history[-2000:]}\nКонтекст лида: {company_context} {opponent_context}\n\nВыбери ровно ОДИН самый релевантный документ из каталога:\n{catalog}\nНапиши только его точное название (например cfo_travel_spending.pdf). Если ничего не подходит, напиши None."
+                    r_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
+                    r_resp = requests.post(r_url, headers={'Content-Type': 'application/json'}, json={"contents": [{"parts": [{"text": router_prompt}]}], "generationConfig": {"temperature": 0.1}}, timeout=30)
+                    
+                    selected_doc = "None"
+                    if r_resp.status_code == 200:
+                        selected_doc = r_resp.json()['candidates'][0]['content']['parts'][0].get('text', '').strip()
+                        
+                    st.success(f"🤖 Агент-маршрутизатор выбрал документ: **{selected_doc}**")
+                    
+                    # ШАГ 2: ПОДГОТОВКА КОНТЕКСТА (ЗАШИТЫЙ БРЕНД + ВЫБРАННЫЙ ДОКУМЕНТ)
+                    kb_context = "БАЗОВЫЕ ЗНАНИЯ TUMODO И ТАБЛИЦЫ КОНКУРЕНТОВ (ЗАШИТО В КОД):\n"
+                    # Всегда грузим бренд, таблицы конкурентов и гайдбук
                     for label, text in kb_texts.items():
-                        if text:
-                            kb_context += f"--- {label} ---\n{text[:3000]}\n\n"
+                        if "brand" in label.lower() or "competitor" in label.lower() or "guidebook" in label.lower():
+                            if text: kb_context += f"--- {label} ---\n{text[:4000]}\n\n"
                             
+                    # Добавляем только целевой документ
+                    for label, text in kb_texts.items():
+                        if label in selected_doc and label != "None":
+                            if text: kb_context += f"ТОЧЕЧНЫЙ КЕЙС ДЛЯ ЭТОГО ЛИДА:\n--- {label} ---\n{text[:4000]}\n\n"
+                    
+                    # ШАГ 3: ГЕНЕРАЦИЯ ОТВЕТА
                     system_prompt = f"""
                     Ты — Стас Клюев (Stanislav Klyuy), Senior Enterprise Sales Executive в компании Tumodo (B2B).
                     Мы общаемся от лица Стаса Клюева. Твоя главная цель — квалифицировать лида в LinkedIn и закрыть его на звонок/демо.
@@ -147,16 +174,16 @@ with col2:
                     Проигнорируй весь технический шум (Pipeline Stage, Automation Connect, Tags added).
                     1. ОПРЕДЕЛИ КОНТЕКСТ: Кто написал последнее смысловое сообщение? Стас Клюев или Лид?
                     2. СЦЕНАРИЙ А (Последнее слово за Лидом): Твоя задача написать 3 отличных варианта ответа.
-                    3. СЦЕНАРИЙ Б (Последнее слово за Стасом / Лид молчит): Твоя задача написать 3 ненавязчивых фоллоу-апа (bump). Вытащи из контекста (или из таблиц конкурентов) точечную ценность (например, кейс про НДС, ROI, автоматизацию), чтобы вернуть лида в диалог.
+                    3. СЦЕНАРИЙ Б (Последнее слово за Стасом / Лид молчит): Твоя задача написать 3 ненавязчивых фоллоу-апа (bump). Вытащи из контекста точечную ценность (например, кейс про НДС, ROI, автоматизацию), чтобы вернуть лида в диалог.
                     4. ИСПОЛЬЗУЙ CHAIN OF THOUGHT: Перед тем как писать варианты, проведи краткий анализ (кто писал последним, какие боли мы закроем, был ли упомянут конкурент).
                     
-                    ПРАВИЛА TUMODO:
+                    ПРАВИЛА TUMODO (ТОН ОФ ВОЙС):
                     - Будь уверенным, говори на языке бизнеса. Подписывайся как Stas Klyuy.
                     - НИКАКИХ извинений в начале. Используй consultative selling (спроси один точный вопрос в конце).
-                    - РАБОТА С КОНКУРЕНТАМИ: Если клиент называет конкурента или мы знаем его из контекста (например, Concur, TravelPerk, Корпоративные карты), ТЫ ОБЯЗАН найти этого конкурента в таблице из Базы Знаний. Используй СТРОГО те слабые стороны конкурента и те сильные стороны Tumodo, которые прописаны в этой таблице! НЕ выдумывай общие аргументы, бери их строго из таблицы конкурентов.
+                    - РАБОТА С КОНКУРЕНТАМИ: Если клиент использует конкурента (например, Concur, TravelPerk, Корпоративные карты), ТЫ ОБЯЗАН найти этого конкурента в таблице из Базы Знаний. Используй СТРОГО те слабые стороны конкурента и те сильные стороны Tumodo, которые прописаны в этой таблице! НЕ выдумывай общие аргументы.
                     - ПРАВИЛО ОТКАЗОВ: Если лид ЖЕСТКО отказывает (пишет "Не интересно", "Нет бюджетов", "Отстаньте"), НЕ ПЫТАЙСЯ ЕМУ ПРОДАВАТЬ. Выдай 3 варианта ОЧЕНЬ КОРОТКОГО (1-2 предложения) вежливого ответа: поблагодари за уделенное время, пожелай отличной недели и оставь микро-зацепку на будущее.
                     
-                    БАЗА ЗНАНИЙ (СТРОГО ОПИРАЙСЯ НА ТАБЛИЦУ КОНКУРЕНТОВ ПРИ ОТВЕТАХ ПРО НИХ):
+                    БАЗА ЗНАНИЙ (ОПИРАЙСЯ НА ЭТИ ДАННЫЕ):
                     {kb_context}
                     
                     ОБЯЗАТЕЛЬНО: Раздели все логические блоки строго строкой "====SEPARATOR====".
@@ -182,7 +209,7 @@ with col2:
                         "generationConfig": {"temperature": 0.5}
                     }
                     
-                    response = requests.post(url, headers=headers, json=data, timeout=45)
+                    response = requests.post(url, headers=headers, json=data, timeout=120)
                     
                     if response.status_code != 200:
                         st.error(f"Ошибка API (Код {response.status_code}): {response.text}")
@@ -205,6 +232,6 @@ with col2:
                                 st.write(raw_text)
                                 
                 except requests.exceptions.Timeout:
-                    st.error("⏳ Серверы Google не ответили за 45 секунд. Скорее всего сервер перегружен, попробуйте отправить запрос еще раз.")
+                    st.error("⏳ Серверы Google не ответили за 2 минуты. Скорее всего сервер перегружен.")
                 except Exception as e:
                     st.error(f"Неизвестная ошибка: {e}")
