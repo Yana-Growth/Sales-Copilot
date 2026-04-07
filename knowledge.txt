@@ -1,0 +1,35 @@
+TUMODO SALES KNOWLEDGE BASE & TONE OF VOICE
+===========================================
+
+1. COMPANY PROPOSITION & VALUE:
+- Tumodo is a B2B business travel management platform.
+- We help companies save up to 35% on hidden travel costs.
+- We automate travel policies, approvals, and reporting, saving Finance and HR teams hours of manual admin work.
+- We provide proper closing documents for accounting, eliminating the headache of collecting individual receipts.
+- Target Audience: CFOs, HR Directors, Procurement Managers, CEOs of growing companies.
+
+2. COMBATING B2C TOOLS (e.g. Make My Trip, Booking.com, Aviasales):
+- B2C tools are fine for individuals, but a nightmare for company finance.
+- Problems with B2C: No centralized control over employee spending, no automated policy enforcement, no easy way to get corporate closing documents, employees waste time booking themselves.
+- Tumodo Solution: Centralized dashboard, employees book within pre-approved budgets, all invoices consolidated.
+
+3. TONE OF VOICE (ToV):
+- Persona: Confident, empathetic Senior Enterprise Sales Executive.
+- Style: Business casual, direct, speaks in numbers (ROI, time saved, 35% cost reduction).
+
+4. SPECIFIC ARGUMENTS FOR CFOs & FINANCE:
+- VAT Recovery: Автоматизированный возврат НДС (VAT) позволяет возвращать от 3% до 5% от стоимости авиабилетов, которые обычно теряются безвозвратно из-за отсутствия структурированного документооборота.
+- ERP Integration: Бесшовная интеграция с SAP/Oracle/Microsoft Dynamics переносит контроль политик и лимитов на этап поиска (до покупки). Это устраняет "разрыв TCO" (разницу между номинальными и реальными затратами), которая в ручных процессах составляет 15–25%.
+- Month-end closing: Автоматизация сокращает время финансового отдела на сверку фрагментированных счетов на 12–18 часов в месяц. В реальных кейсах срок закрытия месяца по T&E сокращается с 8 до 5 рабочих дней.
+- ROI: Компании достигают снижения общих расходов на командировки на 18–22% в течение первых 12 месяцев за счет устранения скрытых утечек.
+
+5. SPECIFIC ARGUMENTS FOR PROCUREMENT:
+- One Vendor: Консолидация всех бронирований через одну платформу дает доступ к закрытым корпоративным тарифам. Например, на маршруте DXB-RUH (Emirates) цены на 14% ниже рыночных, а на JED-CAI (Saudia) — на 11% ниже агентских.
+- Policy Enforcement: "Движок политик" обеспечивает комплаенс выше 80%. Лимиты, классы обслуживания и предпочтительные поставщики применяются автоматически в момент бронирования, блокируя покупку премиум-тарифов и билетов в последний момент.
+- Unused Tickets: Платформа позволяет отслеживать и возвращать до 82% стоимости неиспользованных билетов через "билетный кошелек", превращая их из убытка в актив.
+
+6. OBJECTION HANDLING:
+- "We do it manually and it's fine": Ручные процессы в Excel и через почту создают иллюзию контроля, пока вы не увидите TCO. Финансы тратят до 30 часов в месяц на сверку, а компания теряет до 15% на упущенных скидках и невозвращенном НДС. С ростом компании эти потери становятся критическими.
+- "We use Corporate Cards": Корпоративные карты решают вопрос оплаты, но не решают вопрос контроля политик и сбора отчетности. С Tumodo вы получаете единый инвойс и полную прозрачность: кто, куда и почему поехал, с автоматическим маппингом по центрам затрат (GL codes).
+- "We use [Competitor]": Tumodo предлагает уникальный "Zero IT Lift" — запуск полноценного пилота на 1-2 департамента за 7 дней без привлечения вашего IT-отдела, SSO или сложных интеграций. Мы доказываем эффективность на цифрах до того, как попросим ресурсы вашего тех-отдела.
+- "No budget right now": Tumodo — это инструмент экономии, а не затрат. В кейсе строительной компании внедрение платформы привело к прямой экономии $105,000 уже в первом квартале. Мы окупаем себя за счет снижения средних тарифов на 8% и раннего планирования (бронирование в среднем на 7 дней раньше).

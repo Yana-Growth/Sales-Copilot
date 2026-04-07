@@ -36,26 +36,13 @@ def load_all_files():
     for file_path in supported_files:
         filename = os.path.basename(file_path)
         clean_name = re.sub(r'[^a-zA-Z0-9а-яА-Я._-]', '_', filename)
-        
+        text = ""
         try:
-            text = ""
-            if filename.lower().endswith(".pdf"):
-                reader = pypdf.PdfReader(file_path)
-                for page in reader.pages:
-                    extracted = page.extract_text()
-                    if extracted:
-                        text += extracted + "\n"
-            elif filename.lower().endswith(".csv"):
-                try:
-                    df = pd.read_csv(file_path, sep=';', encoding='utf-8')
-                except Exception:
-                    df = pd.read_csv(file_path, sep=';', encoding='cp1251')
-                text = df.to_string(index=False)
-            elif filename.lower().endswith(".xlsx"):
-                df = pd.read_excel(file_path)
-                text = df.to_string(index=False)
-            elif filename.lower().endswith(".txt"):
-                with open(file_path, "r", encoding="utf-8") as f:
+            if filename.endswith(('.csv', '.xlsx')):
+                df = pd.read_csv(filename) if filename.endswith('.csv') else pd.read_excel(filename)
+                text = df.to_string()
+            elif filename.endswith('.txt'):
+                with open(filename, 'r', encoding='utf-8') as f:
                     text = f.read()
                 
             kb_texts[clean_name] = text
@@ -72,14 +59,12 @@ with st.sidebar:
     selected_model = st.selectbox(
         "Выбор модели",
         [
-            "gemini-3.1-pro-preview",
-            "gemini-pro-latest",
-            "gemini-3-flash-preview",
-            "gemini-flash-latest",
-            "gemini-3.1-flash-lite-preview",
-            "gemini-flash-lite-latest",
-            "gemini-3.1-flash-image-preview",
-            "gemini-3-pro-image-preview"
+            "gemini-1.5-pro",
+            "gemini-1.5-pro-latest",
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-1.5-flash-8b",
+            "gemini-pro"
         ],
         index=0
     )
@@ -125,43 +110,14 @@ with col2:
         elif not lead_history:
             st.error("Пожалуйста, вставьте историю переписки.")
         else:
-            with st.spinner("🚀 Запуск RAG-Агента: Анализ, маршрутизация файлов и написание ответа..."):
+            with st.spinner("🚀 Молниеносный запуск: Анализирую базу знаний и пишу ответ..."):
                 try:
-                    # ШАГ 1: AI ROUTER
-                    catalog = """
-                    - erp_business_travel.pdf: Интеграция с ERP, избавление от ручного ввода.
-                    - cfo_travel_spending.pdf: Для CFO: возврат НДС (VAT), корпоративные карты.
-                    - proc_analysis.pdf / procurement_channels.pdf: Для закупщиков, хаос различных агентств.
-                    - tumodo_construction_case.pdf: Для строительных и индустриальных компаний.
-                    - five_steps_procurement.pdf: Общие шаги оптимизации тревела.
-                    """
-                    
-                    router_prompt = f"Контекст диалога: {lead_history[-2000:]}\nКонтекст лида: {company_context} {opponent_context}\n\nВыбери ровно ОДИН самый релевантный документ из каталога:\n{catalog}\nНапиши только его точное название (например cfo_travel_spending.pdf). Если ничего не подходит, напиши None."
-                    r_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
-                    r_resp = requests.post(r_url, headers={'Content-Type': 'application/json'}, json={"contents": [{"parts": [{"text": router_prompt}]}], "generationConfig": {"temperature": 0.1}}, timeout=30)
-                    
-                    selected_doc = "None"
-                    if r_resp.status_code == 200:
-                        selected_doc = r_resp.json()['candidates'][0]['content']['parts'][0].get('text', '').strip()
-                        
-                    if selected_doc.lower() == "none" or "none" in selected_doc.lower():
-                        st.info("🤖 Агент-маршрутизатор: Специальные кейсы для этого лида не нужны. Отвечаю только на базе Брендбука и Конкурентов.")
-                    else:
-                        st.success(f"🤖 Агент-маршрутизатор выбрал специальный документ: **{selected_doc}**")
-                    
-                    # ШАГ 2: ПОДГОТОВКА КОНТЕКСТА (ЗАШИТЫЙ БРЕНД + ВЫБРАННЫЙ ДОКУМЕНТ)
-                    kb_context = "БАЗОВЫЕ ЗНАНИЯ TUMODO И ТАБЛИЦЫ КОНКУРЕНТОВ (ЗАШИТО В КОД):\n"
-                    # Всегда грузим бренд, таблицы конкурентов и гайдбук
+                    # ПОДГОТОВКА СВОДНОГО КОНТЕКСТА: ТОЛЬКО ЛЕГКИЕ TXT И XLSX
+                    kb_context = "СКОМПИЛИРОВАННАЯ БАЗА ЗНАНИЙ (ОБЯЗАТЕЛЬНО К ИСПОЛЬЗОВАНИЮ):\n"
                     for label, text in kb_texts.items():
-                        if "brand" in label.lower() or "competitor" in label.lower() or "guidebook" in label.lower():
-                            if text: kb_context += f"--- {label} ---\n{text[:4000]}\n\n"
-                            
-                    # Добавляем только целевой документ
-                    for label, text in kb_texts.items():
-                        if label in selected_doc and label != "None":
-                            if text: kb_context += f"ТОЧЕЧНЫЙ КЕЙС ДЛЯ ЭТОГО ЛИДА:\n--- {label} ---\n{text[:4000]}\n\n"
+                        if text: kb_context += f"--- {label} ---\n{text}\n\n"
                     
-                    # ШАГ 3: ГЕНЕРАЦИЯ ОТВЕТА
+                    # ГЕНЕРАЦИЯ ОТВЕТА
                     system_prompt = f"""
                     Ты — Стан Клюев (Stan Klyuy), Senior Enterprise Sales Executive в компании Tumodo (B2B).
                     Мы общаемся от лица Stan Klyuy. Твоя главная цель — квалифицировать лида в LinkedIn и закрыть его на звонок/демо.
@@ -187,6 +143,7 @@ with col2:
                     - РАБОТА С КОНКУРЕНТАМИ: Если клиент использует конкурента (например, Concur, TravelPerk, Корпоративные карты), ТЫ ОБЯЗАН найти этого конкурента в таблице из Базы Знаний. Используй СТРОГО те слабые стороны конкурента и те сильные стороны Tumodo, которые прописаны в этой таблице! НЕ выдумывай общие аргументы.
                     - ПРАВИЛО ОТКАЗОВ: Если лид ЖЕСТКО отказывает (пишет "Не интересно", "Нет бюджетов", "Отстаньте"), НЕ ПЫТАЙСЯ ЕМУ ПРОДАВАТЬ. Выдай 3 варианта ОЧЕНЬ КОРОТКОГО (1-2 предложения) вежливого ответа: поблагодари за уделенное время, пожелай отличной недели и оставь микро-зацепку на будущее.
                     - ГОРЯЧИЕ (WARM) ЛИДЫ: Если лид ПРЯМО ПИШЕТ, ЧТО ЗАИНТЕРЕСОВАН (например, "Давайте созвонимся", "Звучит интересно", "Можем пообщаться"), ты ОБЯЗАН предложить короткий звонок на 10-15 минут и СПРОСИТЬ НОМЕР ТЕЛЕФОНА (WhatsApp/Phone number), чтобы быстро назначить встречу. Не затягивай переписку.
+                    - ВЫБОР ЯЗЫКА ОТВЕТА: Всегда генерируй финальные варианты ответов (Варианты 1, 2, 3) СТРОГО НА АНГЛИЙСКОМ ЯЗЫКЕ (или на языке собеседника: если лид пишет по-немецки, отвечай по-немецки; если по-арабски — по-арабски). Твой анализ можешь выдавать на русском языке.
                     
                     БАЗА ЗНАНИЙ (ОПИРАЙСЯ НА ЭТИ ДАННЫЕ):
                     {kb_context}
