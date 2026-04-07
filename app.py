@@ -59,12 +59,14 @@ with st.sidebar:
     selected_model = st.selectbox(
         "Выбор модели",
         [
-            "gemini-1.5-pro",
-            "gemini-1.5-pro-latest",
-            "gemini-1.5-flash",
-            "gemini-1.5-flash-latest",
-            "gemini-1.5-flash-8b",
-            "gemini-pro"
+            "gemini-3.1-pro-preview",
+            "gemini-pro-latest",
+            "gemini-3-flash-preview",
+            "gemini-flash-latest",
+            "gemini-3.1-flash-lite-preview",
+            "gemini-flash-lite-latest",
+            "gemini-3.1-flash-image-preview",
+            "gemini-3-pro-image-preview"  # restored original Gemini 3.x models
         ],
         index=0
     )
